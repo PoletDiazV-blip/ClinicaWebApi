@@ -11,10 +11,11 @@ public class DatabaseConfig {
     static {
         HikariConfig config = new HikariConfig();
 
-        // Configuración para tu MySQL Workbench Local
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/thriftad_db");
-        config.setUsername("root"); // Pon aquí tu usuario de Workbench
-        config.setPassword("albafica"); // ¡Pon aquí TU CONTRASEÑA de Workbench!
+        // Cambiamos 'localhost' por tu IP Pública de AWS
+        config.setJdbcUrl("jdbc:mysql://54.161.35.239:3306/thriftad_db");
+
+        config.setUsername("root");
+        config.setPassword("albafica"); // Tu contraseña maestra
 
         // Optimizaciones recomendadas
         config.addDataSourceProperty("cachePrepStmts", "true");
@@ -22,10 +23,13 @@ public class DatabaseConfig {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
+        // Configuraciones de tiempo de espera (opcional para nubes)
+        config.setConnectionTimeout(30000); // 30 segundos
+        config.setIdleTimeout(600000); // 10 minutos
+
         dataSource = new HikariDataSource(config);
     }
 
-    // Este método es el que usaremos para pedir una "llave" a la base de datos
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

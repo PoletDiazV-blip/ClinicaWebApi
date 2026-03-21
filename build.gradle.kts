@@ -29,6 +29,10 @@ dependencies {
     // 6. jBCrypt - Para validar las contraseñas "Cone", "Arizbeth", etc.
     implementation("org.mindrot:jbcrypt:0.4")
 
+    // 7. Soporte para fechas de Java 8 (LocalDate) en JSON
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.0")
+
     // Pruebas (ya venían en tu archivo)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
