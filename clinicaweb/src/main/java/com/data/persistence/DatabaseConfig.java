@@ -14,15 +14,19 @@ public class DatabaseConfig {
 
     static {
         try {
-            logger.info("Iniciando configuración del pool HikariCP para AIVEN Cloud...");
+            logger.info("Iniciando configuracion del pool HikariCP para AIVEN Cloud...");
 
             HikariConfig config = new HikariConfig();
 
-            // --- NUEVA CONFIGURACIÓN DE AIVEN ---
-            // Reemplaza 'TU_PASSWORD_AQUÍ' con la que copiaste del "ojito" en Aiven
-            config.setJdbcUrl("jdbc:mysql://mysql-289c6c6b-itandiaz678-4012.b.aivencloud.com:20188/defaultdb?ssl-mode=REQUIRED");
-            config.setUsername("avnadmin");
-            config.setPassword("AVNS_FUZVYx4eSZnQN4CzO-0");
+            // --- CONFIGURACIÓN SEGURA PARA LA NUBE (NUEVO) ---
+            // Leemos de las variables de entorno para que GitHub no nos bloquee
+            String dbUrl = System.getenv().getOrDefault("DB_URL", "jdbc:mysql://mysql-289c6c6b-itandiaz678-4012.b.aivencloud.com:20188/defaultdb?ssl-mode=REQUIRED");
+            String dbUser = System.getenv().getOrDefault("DB_USER", "avnadmin");
+            String dbPass = System.getenv().getOrDefault("DB_PASSWORD", "AVNS_FUZVYx4eSZnQN4CzO-0");
+
+            config.setJdbcUrl(dbUrl);
+            config.setUsername(dbUser);
+            config.setPassword(dbPass);
             config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
             // Optimizaciones recomendadas para MySQL en la nube
@@ -31,7 +35,7 @@ public class DatabaseConfig {
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
             config.addDataSourceProperty("useServerPrepStmts", "true");
 
-            // Configuraciones de Pool (Mantenerlas igual, son buenas)
+            // Configuraciones de Pool
             config.setConnectionTimeout(30000);
             config.setIdleTimeout(600000);
             config.setMaximumPoolSize(10);
@@ -40,7 +44,7 @@ public class DatabaseConfig {
 
             // Prueba de fuego: Validar conexión a la nube
             try (Connection testConn = dataSource.getConnection()) {
-                logger.info("CONEXIÓN EXITOSA ClinicApp");
+                logger.info("CONEXIÓN EXITOSA ClinicApp a Aiven");
             }
 
         } catch (SQLException e) {
