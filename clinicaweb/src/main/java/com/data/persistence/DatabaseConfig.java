@@ -9,56 +9,50 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DatabaseConfig {
-    // Logger para imprimir mensajes profesionales en la consola
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
     private static HikariDataSource dataSource;
 
     static {
         try {
-            logger.info("Iniciando configuracion del pool de conexiones HikariCP...");
+            logger.info("Iniciando configuración del pool HikariCP para AIVEN Cloud...");
 
             HikariConfig config = new HikariConfig();
 
-            // Configuración principal con tus credenciales
-            config.setJdbcUrl("jdbc:mysql://localhost:3306/clinica_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
-            config.setUsername("root");
-            config.setPassword("albafica");
+            // --- NUEVA CONFIGURACIÓN DE AIVEN ---
+            // Reemplaza 'TU_PASSWORD_AQUÍ' con la que copiaste del "ojito" en Aiven
+            config.setJdbcUrl("jdbc:mysql://mysql-289c6c6b-itandiaz678-4012.b.aivencloud.com:20188/defaultdb?ssl-mode=REQUIRED");
+            config.setUsername("avnadmin");
+            config.setPassword("AVNS_FUZVYx4eSZnQN4CzO-0");
             config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-            // Blindaje y Optimización (Timeout y Pool)
+            // Optimizaciones recomendadas para MySQL en la nube
             config.addDataSourceProperty("cachePrepStmts", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "250");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            config.addDataSourceProperty("useServerPrepStmts", "true");
 
-            // Tiempo máximo de espera para obtener una conexión (30 segundos)
+            // Configuraciones de Pool (Mantenerlas igual, son buenas)
             config.setConnectionTimeout(30000);
-            // Tiempo máximo que una conexión puede estar inactiva
             config.setIdleTimeout(600000);
-            // Máximo de conexiones simultáneas a tu Workbench
             config.setMaximumPoolSize(10);
 
             dataSource = new HikariDataSource(config);
 
-            // Prueba de fuego: Intentamos conectar de una vez para validar
-            dataSource.getConnection().close();
-            logger.info("Conexion exitosa a la base de datos: clinica_db");
+            // Prueba de fuego: Validar conexión a la nube
+            try (Connection testConn = dataSource.getConnection()) {
+                logger.info("CONEXIÓN EXITOSA ClinicApp");
+            }
 
         } catch (SQLException e) {
-            logger.error("ERROR CRÍTICO: No se pudo conectar a MySQL Workbench.");
+            logger.error("ERROR CRITICO: No se pudo conectar a la base de datos en AIVEN.");
             logger.error("Detalle del error: {}", e.getMessage());
-            logger.error("Causas probables: ¿MySQL está encendido? ¿La contraseña 'albafica' es correcta?");
-            throw new RuntimeException("Fallo al inicializar la base de datos", e);
+            throw new RuntimeException("Fallo al inicializar la base de datos en la nube", e);
         } catch (Exception e) {
             logger.error("ERROR INESPERADO al configurar HikariCP: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Obtiene una conexión del pool.
-     * @return Connection lista para usar.
-     * @throws SQLException si el pool no puede entregar una conexión.
-     */
     public static Connection getConnection() throws SQLException {
         if (dataSource == null) {
             throw new SQLException("El DataSource no ha sido inicializado.");
@@ -66,7 +60,6 @@ public class DatabaseConfig {
         return dataSource.getConnection();
     }
 
-    // Método para cerrar el pool cuando la app se apague (opcional pero recomendado)
     public static void closePool() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();

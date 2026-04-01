@@ -1,13 +1,14 @@
 plugins {
     id 'java'
     id 'application' // Permite ejecutar la app directamente
+    id "com.github.johnrengelman.shadow" version "8.1.1" // AGREGADO: Solo para el despliegue
 }
 
 group = 'com.clinicaapp'
 version = '1.0-SNAPSHOT'
 
-// Definimos la clase principal para que Gradle sepa dónde arranca la app
-mainClassName = 'com.clinicaapp.Main'
+
+mainClassName = 'Main'
 
 repositories {
     mavenCentral()
@@ -23,7 +24,7 @@ dependencies {
     // --- BASE DE DATOS ---
     // HikariCP: El pool de conexiones más rápido
     implementation 'com.zaxxer:HikariCP:5.1.0'
-    // Driver de MySQL: Para que Java entienda a Workbench
+    // Driver de MySQL: Mantenemos el tuyo 8.0.33
     implementation 'mysql:mysql-connector-java:8.0.33'
 
     // --- JSON ---
@@ -41,7 +42,21 @@ test {
     useJUnitPlatform()
 }
 
+// AGREGADO: Forzamos a que el servidor use Java 21 como tú
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 // Configuración para que Java use UTF-8 (evita errores con tildes y eñes)
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+// AGREGADO: Para que el ejecutable sepa que 'com.clinicaapp.Main' es la que manda
+jar {
+    manifest {
+        attributes('Main-Class': 'Main')
+    }
 }
